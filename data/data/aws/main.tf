@@ -13,6 +13,11 @@ provider "aws" {
   # Validation of AWS Bahrain region was added in AWS TF provider v2.22
   # so we skip when installing in me-south-1.
   skip_region_validation = var.aws_region == "me-south-1"
+
+  endpoints {
+    # This is no need after https://github.com/openshift/installer/pull/2745 is done
+    route53 = (var.aws_region == "cn-north-1" || var.aws_region == "cn-northwest-1") ? "route53.amazonaws.com.cn" : ""
+  }
 }
 
 module "bootstrap" {

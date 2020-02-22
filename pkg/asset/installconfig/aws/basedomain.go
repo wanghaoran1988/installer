@@ -7,7 +7,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/route53"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	survey "gopkg.in/AlecAivazis/survey.v1"
@@ -28,8 +30,14 @@ func GetBaseDomain() (string, error) {
 		return "", err
 	}
 
+	awsConfig := aws.NewConfig()
+	switch *session.Config.Region {
+	case endpoints.CnNorth1RegionID, endpoints.CnNorthwest1RegionID:
+		awsConfig.WithEndpoint("https://route53.amazonaws.com.cn")
+		awsConfig.WithRegion(endpoints.CnNorthwest1RegionID)
+	}
 	logrus.Debugf("listing AWS hosted zones")
-	client := route53.New(session)
+	client := route53.New(session, awsConfig)
 	publicZoneMap := map[string]struct{}{}
 	exists := struct{}{}
 	if err := client.ListHostedZonesPages(
@@ -91,7 +99,13 @@ func GetPublicZone(name string) (*route53.HostedZone, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getting AWS session")
 	}
-	client := route53.New(session)
+	awsConfig := aws.NewConfig()
+	switch *session.Config.Region {
+	case endpoints.CnNorth1RegionID, endpoints.CnNorthwest1RegionID:
+		awsConfig.WithEndpoint("https://route53.amazonaws.com.cn")
+		awsConfig.WithRegion(endpoints.CnNorthwest1RegionID)
+	}
+	client := route53.New(session, awsConfig)
 	if err := client.ListHostedZonesPages(&route53.ListHostedZonesInput{}, f); err != nil {
 		return nil, errors.Wrap(err, "listing hosted zones")
 	}

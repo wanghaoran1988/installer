@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -253,6 +254,14 @@ func waitForBootstrapComplete(ctx context.Context, config *rest.Config, director
 	discovery := client.Discovery()
 
 	apiTimeout := 30 * time.Minute
+	if env, ok := os.LookupEnv("OPENSHIFT_INSTALL_BOOTSTRAP_KUBEAPI_TIMEOUT"); ok && env != "" {
+		logrus.Infof("Found override for bootstrap Kubernetes API timeout :%s", env)
+		t, err := strconv.Atoi(env)
+		if err != nil {
+			return err
+		}
+		apiTimeout = time.Duration(t) * time.Minute
+	}
 	logrus.Infof("Waiting up to %v for the Kubernetes API at %s...", apiTimeout, config.Host)
 	apiContext, cancel := context.WithTimeout(ctx, apiTimeout)
 	defer cancel()
@@ -294,6 +303,14 @@ func waitForBootstrapComplete(ctx context.Context, config *rest.Config, director
 // completed.
 func waitForBootstrapConfigMap(ctx context.Context, client *kubernetes.Clientset) error {
 	timeout := 30 * time.Minute
+	if env, ok := os.LookupEnv("OPENSHIFT_INSTALL_BOOTSTRAP_COMPLETE_TIMEOUT"); ok && env != "" {
+		logrus.Infof("Found override for bootstrap timeout :%s", timeout)
+		t, err := strconv.Atoi(env)
+		if err != nil {
+			return err
+		}
+		timeout = time.Duration(t) * time.Minute
+	}
 	logrus.Infof("Waiting up to %v for bootstrapping to complete...", timeout)
 
 	waitCtx, cancel := context.WithTimeout(ctx, timeout)
@@ -342,7 +359,14 @@ func waitForInitializedCluster(ctx context.Context, config *rest.Config) error {
 			}
 		}
 	}
-
+	if env, ok := os.LookupEnv("OPENSHIFT_INSTALL_INITIALIZE_TIMEOUT"); ok && env != "" {
+		logrus.Infof("Found override for initialize timeout :%s", env)
+		t, err := strconv.Atoi(env)
+		if err != nil {
+			return err
+		}
+		timeout = time.Duration(t) * time.Minute
+	}
 	logrus.Infof("Waiting up to %v for the cluster at %s to initialize...", timeout, config.Host)
 	cc, err := configclient.NewForConfig(config)
 	if err != nil {

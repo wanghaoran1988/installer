@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -14,6 +15,11 @@ import (
 
 // Platform collects AWS-specific configuration.
 func Platform() (*aws.Platform, error) {
+	// TODO show up aws china regions when AMI is override by env
+	if env, ok := os.LookupEnv("OPENSHIFT_INSTALL_OS_IMAGE_OVERRIDE"); ok && env != "" {
+		validation.Regions["cn-north-1"] = "Beijing"
+		validation.Regions["cn-northwest-1"] = "Ningxia"
+	}
 	longRegions := make([]string, 0, len(validation.Regions))
 	shortRegions := make([]string, 0, len(validation.Regions))
 	for id, location := range validation.Regions {

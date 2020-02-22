@@ -1,5 +1,6 @@
+data "aws_partition" "current" {}
 locals {
-  arn = "aws"
+  ec2_service_domain = "${data.aws_partition.current.partition}" == "aws-cn" ? "ec2.amazonaws.com.cn" : "ec2.amazonaws.com"
 }
 
 resource "aws_iam_instance_profile" "worker" {
@@ -19,7 +20,7 @@ resource "aws_iam_role" "worker_role" {
         {
             "Action": "sts:AssumeRole",
             "Principal": {
-                "Service": "ec2.amazonaws.com"
+                "Service": "${local.ec2_service_domain}"
             },
             "Effect": "Allow",
             "Sid": ""

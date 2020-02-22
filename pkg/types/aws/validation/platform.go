@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"os"
 	"sort"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -21,17 +22,17 @@ var (
 		"ap-southeast-1": "Singapore",
 		"ap-southeast-2": "Sydney",
 		"ca-central-1":   "Central",
-		//"cn-north-1":     "Beijing",
-		//"cn-northwest-1": "Ningxia",
-		"eu-central-1": "Frankfurt",
-		"eu-north-1":   "Stockholm",
-		"eu-west-1":    "Ireland",
-		"eu-west-2":    "London",
-		"eu-west-3":    "Paris",
-		"me-south-1":   "Bahrain",
-		"sa-east-1":    "São Paulo",
-		"us-east-1":    "N. Virginia",
-		"us-east-2":    "Ohio",
+		"cn-north-1":     "Beijing",
+		"cn-northwest-1": "Ningxia",
+		"eu-central-1":   "Frankfurt",
+		"eu-north-1":     "Stockholm",
+		"eu-west-1":      "Ireland",
+		"eu-west-2":      "London",
+		"eu-west-3":      "Paris",
+		"me-south-1":     "Bahrain",
+		"sa-east-1":      "São Paulo",
+		"us-east-1":      "N. Virginia",
+		"us-east-2":      "Ohio",
 		//"us-gov-east-1":  "AWS GovCloud (US-East)",
 		//"us-gov-west-1":  "AWS GovCloud (US-West)",
 		"us-west-1": "N. California",
@@ -39,6 +40,10 @@ var (
 	}
 
 	validRegionValues = func() []string {
+		if env, ok := os.LookupEnv("OPENSHIFT_INSTALL_OS_IMAGE_OVERRIDE"); ok && env != "" {
+			Regions["cn-north-1"] = "Beijing"
+			Regions["cn-northwest-1"] = "Ningxia"
+		}
 		validValues := make([]string, len(Regions))
 		i := 0
 		for r := range Regions {

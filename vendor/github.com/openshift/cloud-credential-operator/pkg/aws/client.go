@@ -107,7 +107,8 @@ func NewClient(accessKeyID, secretAccessKey []byte, infraName string) (Client, e
 
 	awsConfig.Credentials = credentials.NewStaticCredentials(
 		string(accessKeyID), string(secretAccessKey), "")
-
+	region := "cn-north-1"
+	awsConfig.Region = &region
 	s, err := session.NewSession(awsConfig)
 	if err != nil {
 		return nil, err

@@ -1,5 +1,8 @@
+data "aws_partition" "current" {}
+
 locals {
   public_endpoints = var.publish_strategy == "External" ? true : false
+  ec2_service_domain = "${data.aws_partition.current.partition}" == "aws-cn" ? "ec2.amazonaws.com.cn" : "ec2.amazonaws.com"
 }
 
 resource "aws_s3_bucket" "ignition" {
@@ -60,7 +63,7 @@ resource "aws_iam_role" "bootstrap" {
         {
             "Action": "sts:AssumeRole",
             "Principal": {
-                "Service": "ec2.amazonaws.com"
+                "Service": "${local.ec2_service_domain}"
             },
             "Effect": "Allow",
             "Sid": ""
@@ -104,7 +107,7 @@ resource "aws_iam_role_policy" "bootstrap" {
       "Action" : [
         "s3:GetObject"
       ],
-      "Resource": "arn:aws:s3:::*",
+      "Resource": "arn:${data.aws_partition.current.partition}:s3:::*",
       "Effect": "Allow"
     }
   ]
